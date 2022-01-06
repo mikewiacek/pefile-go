@@ -21,18 +21,17 @@ func (pe *PEFile) readRVA(iface interface{}, rva uint32) error {
 func (pe *PEFile) readOffset(iface interface{}, offset uint32) error {
 	size := uint32(binary.Size(iface))
 	if offset+size < offset {
-		return fmt.Errorf("overflow, was -1 passed to parseHeader: %s:%x, offset 0x%x, file length: 0x%x", reflect.TypeOf(iface), size, offset, len(pe.data))
+		return fmt.Errorf("overflow, was -1 passed to parseHeader: %s:%x, offset 0x%x, file length: 0x%x", reflect.TypeOf(iface), size, offset, pe.dataLen)
 	}
 	if offset+size > pe.dataLen {
-		return fmt.Errorf("requested header %s:%x would read past end of the file, offset 0x%x, file length: 0x%x", reflect.TypeOf(iface), size, offset, len(pe.data))
+		return fmt.Errorf("requested header %s:%x would read past end of the file, offset 0x%x, file length: 0x%x", reflect.TypeOf(iface), size, offset, pe.dataLen)
 	}
 
-	buf := bytes.NewReader(pe.data[offset : offset+size])
-	err := binary.Read(buf, binary.LittleEndian, iface)
-	if err != nil {
+	raw := make([]byte, size)
+	if _, err := pe.readerAt.ReadAt(raw, int64(offset)); err != nil {
 		return err
 	}
-	return nil
+	return binary.Read(bytes.NewReader(raw), binary.LittleEndian, iface)
 }
 
 // Get an ASCII string from within the data at an RVA considering
@@ -51,10 +50,23 @@ func (pe *PEFile) readStringOffset(offset uint32, maxLen uint32) ([]byte, error)
 		return nil, fmt.Errorf("Attempted to read ASCII string past end of file at offset: 0x%x", offset)
 	}
 
-	for end := offset; end < pe.dataLen && end-offset < maxLen; end++ {
-		if pe.data[end] == 0 {
-			return pe.data[offset:end], nil
+	// if offset+maxLen is too large, cap it reasonably.
+	// This allows the ReadAt method call below to be
+	// comfortable with io.ReaderAt's EOF error semantics.
+	if offset+maxLen > pe.dataLen {
+		maxLen = pe.dataLen - offset
+	}
+
+	buf := make([]byte, maxLen)
+	_, err := pe.readerAt.ReadAt(buf, int64(offset))
+	if err != nil {
+		return nil, err
+	}
+
+	for i, b := range buf {
+		if b == 0 {
+			return buf[:i], nil
 		}
 	}
-	return pe.data[offset:], nil
+	return buf, nil
 }

@@ -4,9 +4,11 @@ package pefile
   TODO: figure out how to detect endianess instead of forcing LittleEndian
 */
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"github.com/edsrzf/mmap-go"
+	"io"
 	"log"
 	"os"
 	"sort"
@@ -25,7 +27,7 @@ type PEFile struct {
 	ExportDirectory   *ExportDirectory
 	Errors            []error
 	// Private Fields
-	data []byte
+	readerAt io.ReaderAt
 	// dataLen is a convience field that holds len(data) as a uint32
 	dataLen   uint32
 	headerEnd uint32
@@ -43,7 +45,7 @@ func NewPEFile(filename string) (pe *PEFile, err error) {
 		return nil, err
 	}
 
-	pe, err = NewPEFileFromBytes(filename, data)
+	pe, err = NewPEFileFromReader(filename, bytes.NewReader(data), uint32(len(data)))
 	if err != nil {
 		pe = nil
 		data.Unmap()
@@ -54,15 +56,16 @@ func NewPEFile(filename string) (pe *PEFile, err error) {
 	return pe, nil
 }
 
-// NewPEFileFromBytes returns a PEFile from the file in data.
-func NewPEFileFromBytes(filename string, data []byte) (pe *PEFile, err error) {
+// NewPEFileFromBytes returns a PEFile from the file returned by r. r must return all dataLen bytes.
+func NewPEFileFromReader(filename string, r io.ReaderAt, dataLen uint32) (pe *PEFile, err error) {
 	pe = new(PEFile)
 	pe.Filename = filename
 	var offset = uint32(0)
 
-	pe.data = data
+	// use an io.SectionReader so we will never be able to read more than dataLen bytes.
+	pe.readerAt = io.NewSectionReader(r, 0, int64(dataLen))
 
-	pe.dataLen = uint32(len(pe.data))
+	pe.dataLen = dataLen
 
 	pe.DosHeader = newDosHeader(uint32(0x0))
 	if err = pe.readOffset(&pe.DosHeader.Data, offset); err != nil {
