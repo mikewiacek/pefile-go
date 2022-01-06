@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/awsaba/pefile-go"
+	"github.com/mikewiacek/pefile-go"
 )
 
 func main() {

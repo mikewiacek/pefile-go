@@ -25,26 +25,42 @@ type PEFile struct {
 	ExportDirectory   *ExportDirectory
 	Errors            []error
 	// Private Fields
-	data mmap.MMap
+	data []byte
 	// dataLen is a convience field that holds len(data) as a uint32
 	dataLen   uint32
 	headerEnd uint32
+	closer    func() error
 }
 
 // NewPEFile attempt to parse a PE file from a file on disk, using mmap
 func NewPEFile(filename string) (pe *PEFile, err error) {
+	handle, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	data, err := mmap.Map(handle, mmap.RDONLY, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	pe, err = NewPEFileFromBytes(filename, data)
+	if err != nil {
+		pe = nil
+		data.Unmap()
+		return nil, err
+	}
+
+	pe.closer = data.Unmap
+	return pe, nil
+}
+
+// NewPEFileFromBytes returns a PEFile from the file in data.
+func NewPEFileFromBytes(filename string, data []byte) (pe *PEFile, err error) {
 	pe = new(PEFile)
 	pe.Filename = filename
 	var offset = uint32(0)
 
-	handle, err := os.Open(pe.Filename)
-	if err != nil {
-		return nil, err
-	}
-	pe.data, err = mmap.Map(handle, mmap.RDONLY, 0)
-	if err != nil {
-		return nil, err
-	}
+	pe.data = data
 
 	pe.dataLen = uint32(len(pe.data))
 
@@ -478,4 +494,12 @@ func (pe *PEFile) calculateHeaderEnd(offset uint32) {
 	} else {
 		pe.headerEnd = minSectionOffset
 	}
+}
+
+// Close frees any mmap'ed memory that was used when creating PEFile.
+func (pe *PEFile) Close() error {
+	if pe.closer != nil {
+		return pe.closer()
+	}
+	return nil
 }
