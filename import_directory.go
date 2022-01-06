@@ -45,7 +45,6 @@ func (pe *PEFile) parseImportDirectory(rva, size uint32) error {
 		} else if !isValidDosFilename(importDesc.Dll) {
 			importDesc.Dll = invalidImportName
 		}
-		log.Printf("Import descriptor name rva 0x%x: %s", importDesc.Data.Name, importDesc.Dll)
 
 		if pe.OptionalHeader64 != nil {
 			if err := pe.parseImports64(&importDesc); err != nil {
