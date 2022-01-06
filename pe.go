@@ -500,6 +500,7 @@ func (pe *PEFile) calculateHeaderEnd(offset uint32) {
 }
 
 // Close frees any mmap'ed memory that was used when creating PEFile.
+// If pe was created using an io.ReaderAt, then this does nothing.
 func (pe *PEFile) Close() error {
 	if pe.closer != nil {
 		return pe.closer()
