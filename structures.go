@@ -334,8 +334,8 @@ func (id ImportData) String() string {
 
 // ImportData64 64-bit version wrapper
 type ImportData64 struct {
-	StructTable      *ThunkData64
-	StructIat        *ThunkData64
+	StructTable      ThunkData64
+	StructIat        ThunkData64
 	ImportByOrdinal  bool
 	Ordinal          uint64
 	OrdinalOffset    uint64
