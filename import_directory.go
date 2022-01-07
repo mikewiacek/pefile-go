@@ -5,7 +5,6 @@ package pefile
 import (
 	"errors"
 	"fmt"
-	"log"
 	"reflect"
 )
 

@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"github.com/edsrzf/mmap-go"
 	"io"
-	"log"
 	"os"
 	"sort"
 )
