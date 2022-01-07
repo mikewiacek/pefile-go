@@ -134,7 +134,7 @@ func NewPEFileFromReader(filename string, r io.ReaderAt, dataLen uint32) (pe *PE
 	// Windows 8 specific check
 	//
 	if pe.OptionalHeader.Data.AddressOfEntryPoint < pe.OptionalHeader.Data.SizeOfHeaders {
-		log.Println("Warning: SizeOfHeaders is smaller than AddressOfEntryPoint: this file cannot run under Windows 8")
+		// log.Println("Warning: SizeOfHeaders is smaller than AddressOfEntryPoint: this file cannot run under Windows 8")
 	}
 
 	// Section data
@@ -150,7 +150,7 @@ func NewPEFileFromReader(filename string, r io.ReaderAt, dataLen uint32) (pe *PE
 
 	if pe.OptionalHeader64 != nil {
 		if pe.OptionalHeader64.Data.NumberOfRvaAndSizes > 0x10 {
-			log.Printf(msg, pe.OptionalHeader64.Data.NumberOfRvaAndSizes)
+			// log.Printf(msg, pe.OptionalHeader64.Data.NumberOfRvaAndSizes)
 		}
 		numRvaAndSizes = pe.OptionalHeader64.Data.NumberOfRvaAndSizes
 		offset += pe.OptionalHeader64.Size
@@ -158,7 +158,7 @@ func NewPEFileFromReader(filename string, r io.ReaderAt, dataLen uint32) (pe *PE
 
 	} else {
 		if pe.OptionalHeader.Data.NumberOfRvaAndSizes > 0x10 {
-			log.Printf(msg, pe.OptionalHeader.Data.NumberOfRvaAndSizes)
+			// log.Printf(msg, pe.OptionalHeader.Data.NumberOfRvaAndSizes)
 		}
 		numRvaAndSizes = pe.OptionalHeader.Data.NumberOfRvaAndSizes
 		offset += pe.OptionalHeader.Size
@@ -196,7 +196,7 @@ func NewPEFileFromReader(filename string, r io.ReaderAt, dataLen uint32) (pe *PE
 
 	_, err = pe.getOffsetFromRva(pe.OptionalHeader.Data.AddressOfEntryPoint)
 	if err != nil {
-		log.Printf("Possibly corrupt file. AddressOfEntryPoint lies outside the file. AddressOfEntryPoint: 0x%x, %s", pe.OptionalHeader.Data.AddressOfEntryPoint, err)
+		// log.Printf("Possibly corrupt file. AddressOfEntryPoint lies outside the file. AddressOfEntryPoint: 0x%x, %s", pe.OptionalHeader.Data.AddressOfEntryPoint, err)
 	}
 
 	err = pe.parseDataDirectories()
@@ -356,7 +356,7 @@ func (pe *PEFile) getRvaFromOffset(offset uint32) uint32 {
 			return offset
 		}
 
-		log.Println("data at Offset can't be fetched. Corrupt header?")
+		// log.Println("data at Offset can't be fetched. Corrupt header?")
 		return ^uint32(0)
 	}
 	sectionAlignment := pe.adjustSectionAlignment(section.Data.VirtualAddress)
@@ -368,7 +368,7 @@ func (pe *PEFile) getOffsetFromRva(rva uint32) (uint32, error) {
 	section := pe.getSectionByRva(rva)
 	if section == nil {
 		if rva < pe.dataLen {
-			log.Printf("No section for rva 0x%x, but less than file length, passing back", rva)
+			// log.Printf("No section for rva 0x%x, but less than file length, passing back", rva)
 			return rva, nil
 		}
 		return 0, fmt.Errorf("RVA 0x%x can't be mapped to a file offset. Corrupt header?", rva)
@@ -397,7 +397,7 @@ func (pe *PEFile) adjustFileAlignment(pointer uint32) uint32 {
 	if fileAlignment > FILE_ALIGNMENT_HARDCODED_VALUE {
 		// If it's not a power of two, report it:
 		if !PowerOfTwo(fileAlignment) {
-			log.Printf("If FileAlignment > 0x200 it should be a power of 2. Value: %x", fileAlignment)
+			// log.Printf("If FileAlignment > 0x200 it should be a power of 2. Value: %x", fileAlignment)
 		}
 	}
 
@@ -418,7 +418,7 @@ func (pe *PEFile) adjustSectionAlignment(pointer uint32) uint32 {
 	fileAlignment := pe.OptionalHeader.Data.FileAlignment
 	if fileAlignment < FILE_ALIGNMENT_HARDCODED_VALUE {
 		if fileAlignment != sectionAlignment {
-			log.Printf("If FileAlignment(%x) < 0x200 it should equal SectionAlignment(%x)", fileAlignment, sectionAlignment)
+			// log.Printf("If FileAlignment(%x) < 0x200 it should equal SectionAlignment(%x)", fileAlignment, sectionAlignment)
 		}
 	}
 	if sectionAlignment < 0x1000 { // page size
