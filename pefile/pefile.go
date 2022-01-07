@@ -50,13 +50,30 @@ func main() {
 
 	fmt.Println("\nDIRECTORY_ENTRY_IMPORT\n")
 	for _, entry := range pefile.ImportDescriptors {
-		fmt.Println(string(entry.Dll))
+		dllPrinted := false
 		for _, imp := range entry.Imports {
 			var funcname string
 			if len(imp.Name) == 0 {
 				funcname = fmt.Sprintf("ordinal+%d", imp.Ordinal)
 			} else {
 				funcname = string(imp.Name)
+			}
+			if !dllPrinted {
+				fmt.Println(string(entry.Dll))
+				dllPrinted = true
+			}
+			fmt.Println("\t", funcname)
+		}
+		for _, imp := range entry.Imports64 {
+			var funcname string
+			if len(imp.Name) == 0 {
+				funcname = fmt.Sprintf("ordinal+%d", imp.Ordinal)
+			} else {
+				funcname = string(imp.Name)
+			}
+			if !dllPrinted {
+				fmt.Println(string(entry.Dll))
+				dllPrinted = true
 			}
 			fmt.Println("\t", funcname)
 		}
