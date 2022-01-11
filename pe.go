@@ -264,8 +264,9 @@ func (pe *PEFile) parseDataDirectories() error {
 		"IMAGE_DIRECTORY_ENTRY_IMPORT": pe.parseImportDirectory,
 
 		// Disabling export parsing. File 35bd9a90403f9c24d5d42ad4608147e7844405ed5f58d302bf1e55fc79103a8b
-		// can cause a memory exhaustion condition.
-		//"IMAGE_DIRECTORY_ENTRY_EXPORT": pe.parseExportDirectory,
+		// can cause a memory exhaustion condition. Which we've now fixed, but still unsure of this
+		// code path, so don't enable it by default.
+		// "IMAGE_DIRECTORY_ENTRY_EXPORT": pe.parseExportDirectory,
 
 		//"IMAGE_DIRECTORY_ENTRY_RESOURCE": pe.parse_resources_directory,
 

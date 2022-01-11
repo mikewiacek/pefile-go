@@ -7,6 +7,9 @@ import (
 	"log"
 )
 
+// Assume a file is corrupted if it contains more than maxNumExports.
+const maxNumExports = 1024
+
 /* Parse the export directory.
 
 Given the RVA of the export directory, it will process all
@@ -39,6 +42,9 @@ func (pe *PEFile) parseExportDirectory(rva, size uint32) (err error) {
 		return fmt.Errorf("AddressOfFunctions would extend past the section end")
 	}
 
+	if exportDir.Data.NumberOfFunctions > maxNumExports {
+		return fmt.Errorf("contains %d exports which is more than max of %d", exportDir.Data.NumberOfFunctions, maxNumExports)
+	}
 	exportDir.Exports = make([]ExportData, exportDir.Data.NumberOfFunctions)
 
 	for ordinalIndex := range exportDir.Exports {
