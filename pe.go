@@ -262,7 +262,7 @@ func (pe *PEFile) parseDataDirectories() error {
 
 	funcMap := map[string]interface{}{
 		"IMAGE_DIRECTORY_ENTRY_IMPORT": pe.parseImportDirectory,
-		"IMAGE_DIRECTORY_ENTRY_EXPORT": pe.parseExportDirectory,
+		// "IMAGE_DIRECTORY_ENTRY_EXPORT": pe.parseExportDirectory,
 		//"IMAGE_DIRECTORY_ENTRY_RESOURCE": pe.parse_resources_directory,
 
 		// TODO at a later time
