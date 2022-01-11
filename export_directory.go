@@ -61,7 +61,7 @@ func (pe *PEFile) parseExportDirectory(rva, size uint32) (err error) {
 			if err != nil {
 				return err
 			}
-			e.Forwarder, err = pe.readStringRVA(e.Address)
+			e.Forwarder, err = pe.readStringRVA(e.Address, maxStringLength)
 			if err != nil {
 				log.Printf("%s", err.Error())
 			}
@@ -91,7 +91,7 @@ func (pe *PEFile) parseExportDirectory(rva, size uint32) (err error) {
 		if err = pe.readOffset(&nameAddr, nameOffset); err != nil {
 			return err
 		}
-		name, err := pe.readStringRVA(nameAddr)
+		name, err := pe.readStringRVA(nameAddr, maxStringLength)
 		if err != nil {
 			log.Println("Error reading symbol name", err)
 			break

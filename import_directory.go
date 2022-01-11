@@ -37,7 +37,7 @@ func (pe *PEFile) parseImportDirectory(rva, size uint32) error {
 
 		fileOffset += importDesc.Size
 
-		importDesc.Dll, err = pe.readStringRVA(importDesc.Data.Name)
+		importDesc.Dll, err = pe.readStringRVA(importDesc.Data.Name, maxStringLength)
 		if err != nil {
 			// log.Println("Error reading import name", err)
 			importDesc.Dll = invalidImportName
@@ -133,7 +133,7 @@ func (pe *PEFile) parseImports(importDesc *ImportDescriptor) (err error) {
 					}
 				}
 
-				imp.Name, err = pe.readStringRVA(table[idx].Data.AddressOfData + 2)
+				imp.Name, err = pe.readStringRVA(table[idx].Data.AddressOfData+2, maxStringLength)
 				if err != nil {
 					// log.Println("Error reading import name", err)
 					imp.Name = invalidImportName
@@ -339,7 +339,7 @@ func (pe *PEFile) parseImports64(importDesc *ImportDescriptor) (err error) {
 					}
 				}
 
-				imp.Name, err = pe.readStringRVA(uint32(table[idx].Data.AddressOfData + 2))
+				imp.Name, err = pe.readStringRVA(uint32(table[idx].Data.AddressOfData+2), maxStringLength)
 				if err != nil {
 					// log.Println("Error reading import name", err)
 					imp.Name = invalidImportName

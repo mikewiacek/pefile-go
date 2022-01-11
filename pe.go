@@ -262,7 +262,11 @@ func (pe *PEFile) parseDataDirectories() error {
 
 	funcMap := map[string]interface{}{
 		"IMAGE_DIRECTORY_ENTRY_IMPORT": pe.parseImportDirectory,
-		// "IMAGE_DIRECTORY_ENTRY_EXPORT": pe.parseExportDirectory,
+
+		// Disabling export parsing. File 35bd9a90403f9c24d5d42ad4608147e7844405ed5f58d302bf1e55fc79103a8b
+		// can cause a memory exhaustion condition.
+		//"IMAGE_DIRECTORY_ENTRY_EXPORT": pe.parseExportDirectory,
+
 		//"IMAGE_DIRECTORY_ENTRY_RESOURCE": pe.parse_resources_directory,
 
 		// TODO at a later time

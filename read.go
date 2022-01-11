@@ -7,6 +7,9 @@ import (
 	"reflect"
 )
 
+// Unless told otherwise, never try an read a string longer than 2<<20 from a PE header.
+const maxStringLength = 2 << 20
+
 // readRVA does a binary.Read() at the given RVA by attempting to translate
 // it to a file offset first
 func (pe *PEFile) readRVA(iface interface{}, rva uint32) error {
@@ -36,11 +39,16 @@ func (pe *PEFile) readOffset(iface interface{}, offset uint32) error {
 
 // Get an ASCII string from within the data at an RVA considering
 // section
-func (pe *PEFile) readStringRVA(rva uint32) ([]byte, error) {
+func (pe *PEFile) readStringRVA(rva uint32, maxLen uint32) ([]byte, error) {
 	start, length, err := pe.getDataBounds(rva)
 	if err != nil {
 		return nil, err
 	}
+
+	if length > maxLen {
+		length = maxLen
+	}
+
 	return pe.readStringOffset(start, length)
 }
 
