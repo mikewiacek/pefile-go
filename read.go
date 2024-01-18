@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"reflect"
 )
 
@@ -65,22 +66,38 @@ func (pe *PEFile) readStringOffset(offset uint32, maxLen uint32) ([]byte, error)
 		maxLen = pe.dataLen - offset
 	}
 
-	buf := make([]byte, maxLen)
-	_, err := pe.readerAt.ReadAt(buf, int64(offset))
-	if err != nil {
-		return nil, err
-	}
+	const chunkSize = 512
 
-	for i, b := range buf {
-		if b == 0 {
-			// If the proportion of buf used is less than 95% of its capacity, reallocate.
-			if float64(i)/float64(cap(buf)) < 0.95 {
-				newBuf := make([]byte, i)
-				copy(newBuf, buf[:i])
-				return newBuf, nil
+	var result []byte
+	buf := make([]byte, chunkSize)
+
+	for totalRead := uint32(0); totalRead < maxLen; {
+		// Determine the size of the next chunk to read
+		remaining := maxLen - totalRead
+		if remaining > chunkSize {
+			remaining = chunkSize
+		}
+
+		// Read data into the buffer
+		n, err := pe.readerAt.ReadAt(buf[:remaining], int64(offset+totalRead))
+		if err != nil && err != io.EOF {
+			return nil, err
+		}
+
+		// Append the read bytes to the result, and check for null terminator
+		for i := 0; i < n; i++ {
+			if buf[i] == 0 {
+				return result, nil
 			}
-			return buf[:i], nil
+			result = append(result, buf[i])
+		}
+
+		// Update total read bytes and continue if more data is expected
+		totalRead += uint32(n)
+		if uint32(n) < remaining || err == io.EOF {
+			break
 		}
 	}
-	return buf, nil
+
+	return result, nil
 }
