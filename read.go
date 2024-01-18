@@ -73,6 +73,12 @@ func (pe *PEFile) readStringOffset(offset uint32, maxLen uint32) ([]byte, error)
 
 	for i, b := range buf {
 		if b == 0 {
+			// If the proportion of buf used is less than 95% of its capacity, reallocate.
+			if float64(i)/float64(cap(buf)) < 0.95 {
+				newBuf := make([]byte, i)
+				copy(newBuf, buf[:i])
+				return newBuf, nil
+			}
 			return buf[:i], nil
 		}
 	}
