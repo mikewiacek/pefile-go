@@ -8,7 +8,10 @@ import (
 	"reflect"
 )
 
-/* Parse the import directory.
+const maxImportStringLength = 65536
+
+/*
+	Parse the import directory.
 
 Given the RVA of the export directory, it will process all
 its entries.
@@ -37,7 +40,7 @@ func (pe *PEFile) parseImportDirectory(rva, size uint32) error {
 
 		fileOffset += importDesc.Size
 
-		importDesc.Dll, err = pe.readStringRVA(importDesc.Data.Name, maxStringLength)
+		importDesc.Dll, err = pe.readStringRVA(importDesc.Data.Name, maxImportStringLength)
 		if err != nil {
 			// log.Println("Error reading import name", err)
 			importDesc.Dll = invalidImportName
@@ -75,11 +78,11 @@ func (pe *PEFile) parseImportDirectory(rva, size uint32) error {
 }
 
 /*
-	Parse the imported symbols.
+Parse the imported symbols.
 
-	It will fill a list, which will be available as the dictionary
-	attribute "imports". Its keys will be the DLL names and the values
-	all the symbols imported from that object.
+It will fill a list, which will be available as the dictionary
+attribute "imports". Its keys will be the DLL names and the values
+all the symbols imported from that object.
 */
 func (pe *PEFile) parseImports(importDesc *ImportDescriptor) (err error) {
 	var table, ilt, iat []ThunkData
@@ -133,7 +136,7 @@ func (pe *PEFile) parseImports(importDesc *ImportDescriptor) (err error) {
 					}
 				}
 
-				imp.Name, err = pe.readStringRVA(table[idx].Data.AddressOfData+2, maxStringLength)
+				imp.Name, err = pe.readStringRVA(table[idx].Data.AddressOfData+2, maxImportStringLength)
 				if err != nil {
 					// log.Println("Error reading import name", err)
 					imp.Name = invalidImportName
@@ -339,7 +342,7 @@ func (pe *PEFile) parseImports64(importDesc *ImportDescriptor) (err error) {
 					}
 				}
 
-				imp.Name, err = pe.readStringRVA(uint32(table[idx].Data.AddressOfData+2), maxStringLength)
+				imp.Name, err = pe.readStringRVA(uint32(table[idx].Data.AddressOfData+2), maxImportStringLength)
 				if err != nil {
 					// log.Println("Error reading import name", err)
 					imp.Name = invalidImportName
