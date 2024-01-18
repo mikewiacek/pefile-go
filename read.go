@@ -84,7 +84,7 @@ func (pe *PEFile) readStringOffset(offset uint32, maxLen uint32) ([]byte, error)
 		if err != nil && err != io.EOF {
 			return nil, err
 		}
-		fmt.Println("Chunked read at read: ", n, "bytes => ", strings.Replace(string(buf[:n]), "\x00", "\\x00"))
+		fmt.Println("Chunked read at read: ", n, "bytes => ", strings.Replace(string(buf[:n]), "\x00", "\\x00", -1))
 
 		// Append the read bytes to the result, and check for null terminator
 		for i := 0; i < n; i++ {
