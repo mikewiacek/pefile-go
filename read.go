@@ -89,7 +89,6 @@ func (pe *PEFile) readStringOffset(offset uint32, maxLen uint32) ([]byte, error)
 		// Append the read bytes to the result, and check for null terminator
 		for i := 0; i < n; i++ {
 			if buf[i] == 0 {
-				result = append(result, buf[:i]...)
 				fmt.Println("returning string:", string(result))
 				return result, nil
 			}
