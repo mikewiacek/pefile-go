@@ -93,6 +93,7 @@ func (pe *PEFile) readStringOffset(offset uint32, maxLen uint32) ([]byte, error)
 				fmt.Println("returning string:", string(result))
 				return result, nil
 			}
+			fmt.Println("appending byte: ", string(buf[i]))
 			result = append(result, buf[i])
 		}
 
